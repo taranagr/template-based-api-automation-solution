@@ -1,0 +1,7 @@
+.idea
+.idea/*.*
+*.xml
+*.iml
+__pycache__
+*test_reports/*.*
+utilities/secret.key
