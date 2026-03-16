@@ -4,17 +4,17 @@ from behave.exception import StepNotImplementedError
 
 from common_library.api_lib import *
 
-user_token = None
+token = None
 user_response = None
+os.environ["TEST_ENVIRONMENT"] = "STG"
 
 @given(u'User Access Token API with body "{body_template}" and headers "{headers_template}"')
 def user_access_token_api(context, body_template, headers_template):
     global token
-    os.environ["TEST_ENVIRONMENT"] = "STG"
     url = get_url_from_api_config("user_token_url")
     body = get_api_headers(body_template)
-    body = update_api_headers_json(body, "username", "emilys")
-    body = update_api_headers_json(body, "password", "emilyspass")
+    body = update_api_body_json(body, "username", "emilys")
+    body = update_api_body_json(body, "password", "emilyspass")
     response = post_api(url, body, get_api_headers(headers_template))
     compare("200", response.status_code)
     token = response.json()["accessToken"]
