@@ -12,7 +12,7 @@ def compare(actual , expected):
     if str(expected) in str(actual):
         print(f'actual: {str(actual)} contains expected: {str(expected)}')
     else:
-        print(f'actual: {str(actual)} does not contain expected: {str(expected)}')
+        raise AssertionError(f'actual: {str(actual)} does not contain expected: {str(expected)}')
 
 
 def get_details_from_vault():
@@ -61,27 +61,32 @@ def read_json_file(file_path):
         data = json.load(file)
         return data
 
-def get_api(url, body, header):
+def send_api(api_type, url, body, headers):
+    response = requests.request(api_type, url, json=body, headers=headers)
+    print(f"status code: {response.status_code}")
+    return response
+
+def get_api(url, body, headers):
     response = requests.get(url, json=body, headers=header)
     print(f"status code: {response.status_code}")
     return response
 
-def post_api(url, body, header):
+def post_api(url, body, headers):
     response = requests.post(url, json=body, headers=header)
     print(f"status code: {response.status_code}")
     return response
 
-def put_api(url, body, header):
+def put_api(url, body, headers):
     response = requests.put(url, json=body, headers=header)
     print(f"status code: {response.status_code}")
     return response
 
-def delete_api(url, body, header):
+def delete_api(url, body, headers):
     response = requests.delete(url, body, headers=header)
     print(f"status code: {response.status_code}")
     return response
 
-def patch_api(url, body, header):
+def patch_api(url, body, headers):
     response = requests.patch(url, json=body, headers=header)
     print(f"status code: {response.status_code}")
     return response
@@ -119,3 +124,5 @@ def update_token_body(token_body, client_id_key, client_secret_key_name):
     token_body["client_id"] = data.get(vault_client_id_key_name)
     token_body["client_secret"] = data.get(client_secret_key_name)
     return token_body
+
+
