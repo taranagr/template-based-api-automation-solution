@@ -1,5 +1,7 @@
 import os
-from behave import given, when, then
+import re
+import self
+from behave import given, when, then, use_step_matcher
 from behave.exception import StepNotImplementedError
 
 from common_library.api_lib import *
@@ -10,7 +12,9 @@ product_response = None
 product_id = "1"
 os.environ["TEST_ENVIRONMENT"] = "STG"
 
-@given(u'Product Access Token API with body "{body_template}" and headers "{headers_template}"')
+use_step_matcher("re")
+
+@given(u'Product Access Token API with body "([^"]*)" and headers "([^"]*)"')
 def product_token_api(context, body_template, headers_template):
     global token
     os.environ["TEST_ENVIRONMENT"] = "STG"
@@ -22,25 +26,20 @@ def product_token_api(context, body_template, headers_template):
     compare("200", response.status_code)
     token = response.json()["accessToken"]
 
-def get_product_url(api_type):
-    match api_type:
-        case "POST":
-            url = get_url_from_api_config("add_product_url")
-        case "GET"|"POST"|"PUT"|"PATCH"|"DELETE":
-            url = get_url_from_api_config("update_product_url")
-        case _: # The wildcard pattern acts as a default case
-            print("Incorrect API Type. Please check")
-    return url
+@when('Use Invalid Product Id "([^"]*)"')
+def set_product_id(context, set_product_id):
+    global product_id
+    product_id = set_product_id
 
-@when(u'Run Product {api_type} API with body "{body_template}" and headers "{headers_template}"')
-def product_api(context, api_type, body_template, headers_template):
+@when(u'Run Product ([^"]*) API with URL "([^"]*)", body "([^"]*)" and headers "([^"]*)"')
+def product_api(context, api_type, url_name, body_template, headers_template):
     global product_response
-    url = get_product_url(api_type)
+    url = get_url_from_api_config(url_name)
     url = url.replace("<PRODUCT_ID>", product_id)
     # headers = update_api_headers_json(get_api_headers(headers_template), "Authorization", "Bearer " + token)
     product_response = send_api(api_type, url, get_api_body(body_template), get_api_headers(headers_template))
 
-@then(u'Validate Product Response Status Code "{expected_response_code}" and Response Message "{expected_response_message}"')
+@then(u'Validate Product Response Status Code "([^"]*)" and Response Message "([^"]*)"')
 def validate_product_api(context, expected_response_code, expected_response_message):
     compare(product_response.status_code, expected_response_code)
     compare(json.dumps(product_response.json()), expected_response_message)
@@ -51,6 +50,4 @@ def get_product_id():
         print("Product ID:" + product_id)
     else:
         print("API response status code is :" + product_response.status_code)
-
-
 

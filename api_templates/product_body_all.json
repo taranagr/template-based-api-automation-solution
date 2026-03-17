@@ -1,0 +1,15 @@
+{
+  "name": "Apple MacBook Pro 16",
+  "data": {
+    "year": 2019,
+    "price": 1849.99,
+    "CPU model": "Intel Core i9",
+    "Hard disk size": "1 TB",
+    "Memory": "128 GB Unified Memory",
+    "Storage": "512 GB",
+    "Dimension": "0.66 H, 14.01 W, 9.77 D",
+    "Weight": "4.7 pounds",
+    "Ports": "3 x USB-C, HDMI 2.1, SDXC Card Slot",
+    "Camera": "1080p FaceTime HD Camera"
+  }
+}
