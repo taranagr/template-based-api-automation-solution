@@ -8,6 +8,8 @@ from common_library.api_lib import *
 
 token = None
 url = None
+body = None
+headers = None
 product_response = None
 product_id = "ff8081819cd4022c019cf93dfbe537f7"
 os.environ["TEST_ENVIRONMENT"] = "STG"
@@ -20,8 +22,8 @@ def product_token_api(context, body_template, headers_template):
     os.environ["TEST_ENVIRONMENT"] = "STG"
     url = get_url_from_api_config("user_token_url")
     body = get_api_headers(body_template)
-    body = update_api_body_json(body, "username", "emilys")
-    body = update_api_body_json(body, "password", "emilyspass")
+    body = update_body_property(body, "username", "emilys")
+    body = update_body_property(body, "password", "emilyspass")
     response = post_api(url, body, get_api_headers(headers_template))
     compare("200", response.status_code)
     token = response.json()["accessToken"]
@@ -32,7 +34,7 @@ def set_product_id(context, set_product_id):
     product_id = set_product_id
 
 @when(u'Run Product ([^"]*) API with URL "([^"]*)", body "([^"]*)" and headers "([^"]*)"')
-def product_api(context, api_type, url_name, body_template, headers_template):
+def run_product_api(context, api_type, url_name, body_template, headers_template):
     global product_response
     url = get_url_from_api_config(url_name)
     url = url.replace("<PRODUCT_ID>", product_id)
@@ -53,3 +55,28 @@ def get_product_id(context):
     else:
         print("API response status code is :" + product_response.status_code)
 
+
+@when(u'Use Product API with URL "([^"]*)", body "([^"]*)" and headers "([^"]*)"')
+def use_product_api(context, url_name, body_template, headers_template):
+    global url, body, headers
+    url = get_url_from_api_config(url_name)
+    url = url.replace("<PRODUCT_ID>", product_id)
+    body = get_api_headers(body_template)
+    # headers = update_api_headers_json(get_api_headers(headers_template), "Authorization", "Bearer " + token)
+    headers = get_api_headers(headers_template)
+
+
+@when(u'Use "([^"]*)", (?:Invalid|valid) "([^"]*)" and Type "([^"]*)"')
+def update_property_value(context, property_path, property_value, property_type):
+    global body
+    body = update_body_property(body, property_path, property_value, property_type)
+
+@when(u'Remove Property "([^"]*)"')
+def remove_property(context, property_path):
+    global body
+    body = remove_body_property(body, property_path)
+
+@when(u'Run Product ([^"]*) API')
+def run_product(context, api_type):
+    global product_response
+    product_response = send_api(api_type, url, body, headers)
