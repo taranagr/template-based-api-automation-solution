@@ -1,6 +1,7 @@
 import configparser
 import json
 import os
+from unittest import case
 
 import msal
 import requests
@@ -67,27 +68,27 @@ def send_api(api_type, url, body, headers):
     return response
 
 def get_api(url, body, headers):
-    response = requests.get(url, json=body, headers=header)
+    response = requests.get(url, json=body, headers=headers)
     print(f"status code: {response.status_code}")
     return response
 
 def post_api(url, body, headers):
-    response = requests.post(url, json=body, headers=header)
+    response = requests.post(url, json=body, headers=headers)
     print(f"status code: {response.status_code}")
     return response
 
 def put_api(url, body, headers):
-    response = requests.put(url, json=body, headers=header)
+    response = requests.put(url, json=body, headers=headers)
     print(f"status code: {response.status_code}")
     return response
 
 def delete_api(url, body, headers):
-    response = requests.delete(url, body, headers=header)
+    response = requests.delete(url, body, headers=headers)
     print(f"status code: {response.status_code}")
     return response
 
 def patch_api(url, body, headers):
-    response = requests.patch(url, json=body, headers=header)
+    response = requests.patch(url, json=body, headers=headers)
     print(f"status code: {response.status_code}")
     return response
 
@@ -107,15 +108,29 @@ def get_api_headers(template_name):
     headers = read_json_file(template_path + "\\" + template_name)
     return headers
 
-def update_api_body_json(body, property_path, property_value, property_type="STRING"):
+def update_body_property(headers, property_path, property_value, property_type="STRING"):
     path_expression = parse(property_path)
-    api_body = path_expression.update(body, property_value)
-    return api_body
+    headers = path_expression.update(headers, convert_to_datatype(property_value, property_type))
+    print(headers)
+    return headers
 
-def update_api_headers_json(header, property_path, property_value, property_type="STRING"):
+def update_headers_property(headers, property_path, property_value, property_type="STRING"):
     path_expression = parse(property_path)
-    api_header = path_expression.update(header, property_value)
-    return api_header
+    headers = path_expression.update(headers, convert_to_datatype(property_value, property_type))
+    print(headers)
+    return headers
+
+def remove_body_property(body, property_path):
+    path_expression = parse(property_path)
+    body = path_expression.filter(lambda d:True, body)
+    print(body)
+    return body
+
+def remove_headers_property(headers, property_path):
+    path_expression = parse(property_path)
+    body = path_expression.filter(lambda d:True, headers)
+    print(body)
+    return body
 
 def update_token_body(token_body, client_id_key, client_secret_key_name):
     vault_client_id_key_name = read_api_config(os.environ["TEST_ENVIRONMENT"], client_id_key)
@@ -125,4 +140,19 @@ def update_token_body(token_body, client_id_key, client_secret_key_name):
     token_body["client_secret"] = data.get(client_secret_key_name)
     return token_body
 
+def convert_to_datatype(value, datatype):
+    converted_value = None
+    match datatype.upper():
+        case "STRING":
+            converted_value = str(value)
+        case "INTEGER":
+            converted_value = int(value)
+        case "FLOAT":
+            converted_value = float(value)
+        case "BOOLEAN":
+            converted_value = bool(value)
+        case _:
+            raise AssertionError(f'datatype {datatype} not found. Please check.')
+
+    return converted_value
 

@@ -13,8 +13,8 @@ def user_access_token_api(context, body_template, headers_template):
     global token
     url = get_url_from_api_config("user_token_url")
     body = get_api_headers(body_template)
-    body = update_api_body_json(body, "username", "emilys")
-    body = update_api_body_json(body, "password", "emilyspass")
+    body = update_body_property(body, "username", "emilys")
+    body = update_body_property(body, "password", "emilyspass")
     response = post_api(url, body, get_api_headers(headers_template))
     compare("200", response.status_code)
     token = response.json()["accessToken"]
@@ -23,7 +23,7 @@ def user_access_token_api(context, body_template, headers_template):
 def user_api(context, body_template, headers_template):
     global user_response
     url = get_url_from_api_config("user_url")
-    headers = update_api_headers_json(get_api_headers(headers_template), "Authorization","Bearer " + token)
+    headers = update_headers_property(get_api_headers(headers_template), "Authorization","Bearer " + token)
     user_response = get_api(url, get_api_body(body_template), headers)
 
 @then(u'Validate Status Code "{expected_response_code}" and Response Message "{expected_response_message}"')
