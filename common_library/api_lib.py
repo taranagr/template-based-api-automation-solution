@@ -32,7 +32,7 @@ def get_details_from_vault():
     result = app.acquire_token_by_username_password(username=username, password=decrypt_message(encrypted_password), scopes=scope)
     jwt_token = result['id_token']
     vault_token_body_json = get_api_body("vault_token_body")
-    vault_token_body_json = update_api_body_json(vault_token_body_json,"jwt", jwt_token)
+    vault_token_body_json = update_body_property(vault_token_body_json,"jwt", jwt_token)
     vault_token_headers_json = get_api_headers("vault_token_headers")
     vault_token_api_response = post_api(api_vault_token_url, vault_token_body_json, vault_token_headers_json)
     vault_token = vault_token_api_response.json().get("auth").get("client_token")
