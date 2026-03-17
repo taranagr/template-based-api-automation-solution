@@ -17,7 +17,7 @@ Feature: Add Product
     Then Validate Product Response Status Code "<Expected Status Code>" and Response Message "<Expected Message>"
     Examples:
       | URL Name        | Body Template Name | Headers Template Name | Expected Status Code | Expected Message     |
-      | add_product_url | product_body.json  | product_headers.json  | 200                  | Apple MacBook Pro 16 |
+      | add_product_url | product_body_all.json  | product_headers.json  | 200                  | Apple MacBook Pro 16 |
 
   @Product
   Scenario Outline: Add_Product_03: Validate Duplicate Product Error Code and Message
