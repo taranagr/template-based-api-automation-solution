@@ -9,7 +9,7 @@ from common_library.api_lib import *
 token = None
 url = None
 product_response = None
-product_id = "1"
+product_id = "ff8081819cd4022c019cf93dfbe537f7"
 os.environ["TEST_ENVIRONMENT"] = "STG"
 
 use_step_matcher("re")
@@ -44,7 +44,9 @@ def validate_product_api(context, expected_response_code, expected_response_mess
     compare(product_response.status_code, expected_response_code)
     compare(json.dumps(product_response.json()), expected_response_message)
 
-def get_product_id():
+@then(u'Capture Product Id')
+def get_product_id(context):
+    global product_id
     if product_response.status_code == 200:
         product_id = product_response.json()["id"]
         print("Product ID:" + product_id)
