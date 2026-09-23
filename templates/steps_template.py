@@ -1,0 +1,81 @@
+import os
+import re
+from behave import given, when, then, use_step_matcher
+from behave.exception import StepNotImplementedError
+
+from common_library.api_lib import *
+
+token = None
+url = None
+body = None
+headers = None
+product_response = None
+product_id = "ff8081819cd4022c019cf93dfbe537f7"
+os.environ["TEST_ENVIRONMENT"] = "STG"
+
+use_step_matcher("re")
+
+@given(u'Product Access Token API with body "([^"]*)" and headers "([^"]*)"')
+def product_token_api(context, body_template, headers_template):
+    global token
+    os.environ["TEST_ENVIRONMENT"] = "STG"
+    url = get_url_from_api_config("user_token_url")
+    body = get_api_headers(body_template)
+    body = update_body_property(body, "username", "emilys")
+    body = update_body_property(body, "password", "emilyspass")
+    response = post_api(url, body, get_api_headers(headers_template))
+    compare("200", response.status_code)
+    token = response.json()["accessToken"]
+
+@when('Use Invalid Product Id "([^"]*)"')
+def set_product_id(context, set_product_id):
+    global product_id
+    product_id = set_product_id
+
+@when(u'Run Product ([^"]*) API with URL "([^"]*)", body "([^"]*)" and headers "([^"]*)"')
+def run_product_api(context, api_type, url_name, body_template, headers_template):
+    global product_response
+    url = get_url_from_api_config(url_name)
+    url = url.replace("<PRODUCT_ID>", product_id)
+    # headers = update_api_headers_json(get_api_headers(headers_template), "Authorization", "Bearer " + token)
+    product_response = send_api(api_type, url, get_api_body(body_template), get_api_headers(headers_template))
+
+@then(u'Validate Product Response Status Code "([^"]*)" and Response Message "([^"]*)"')
+def validate_product_api(context, expected_response_code, expected_response_message):
+    compare(product_response.status_code, expected_response_code)
+    compare(json.dumps(product_response.json()), expected_response_message)
+
+@then(u'Capture Product Id')
+def get_product_id(context):
+    global product_id
+    if product_response.status_code == 200:
+        product_id = product_response.json()["id"]
+        print("Product ID:" + product_id)
+    else:
+        print("API response status code is :" + product_response.status_code)
+
+
+@when(u'Use Product API with URL "([^"]*)", body "([^"]*)" and headers "([^"]*)"')
+def use_product_api(context, url_name, body_template, headers_template):
+    global url, body, headers
+    url = get_url_from_api_config(url_name)
+    url = url.replace("<PRODUCT_ID>", product_id)
+    body = get_api_headers(body_template)
+    # headers = update_api_headers_json(get_api_headers(headers_template), "Authorization", "Bearer " + token)
+    headers = get_api_headers(headers_template)
+
+
+@when(u'Use "([^"]*)", (?:Invalid|valid) "([^"]*)" and Type "([^"]*)"')
+def update_property_value(context, property_path, property_value, property_type):
+    global body
+    body = update_body_property(body, property_path, property_value, property_type)
+
+@when(u'Remove Property "([^"]*)"')
+def remove_property(context, property_path):
+    global body
+    body = remove_body_property(body, property_path)
+
+@when(u'Run Product ([^"]*) API')
+def run_product(context, api_type):
+    global product_response
+    product_response = send_api(api_type, url, body, headers)
