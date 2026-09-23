@@ -1,6 +1,5 @@
 import os
 import re
-import self
 from behave import given, when, then, use_step_matcher
 from behave.exception import StepNotImplementedError
 
