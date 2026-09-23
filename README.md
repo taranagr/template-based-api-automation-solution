@@ -113,6 +113,60 @@ Each section contains endpoint definitions used by the step files. If you need t
 
 The JSON files in [api_templates/](api_templates) define reusable request bodies and headers for the tests. These templates are loaded dynamically by the step definitions, which makes the suite easier to extend for new scenarios.
 
+## 🖥️ Chrome extension bridge
+
+The repository includes a working local bridge for a Chrome extension that can trigger actual Behave scenarios through HTTP.
+
+- [extension_bridge.py](extension_bridge.py) starts a local HTTP server on `http://127.0.0.1:8000`
+- `GET /health` returns the backend status
+- `POST /api/run` accepts a JSON payload with `feature`, `scenario`, and `environment`
+- The bridge executes Behave using the selected scenario and returns the result JSON
+
+Example request:
+
+```bash
+$body = @{
+  feature = 'user.feature'
+  scenario = 'User Details_01: Run User API'
+  environment = 'STG'
+} | ConvertTo-Json -Compress
+
+Invoke-RestMethod -Uri 'http://127.0.0.1:8000/api/run' -Method Post -ContentType 'application/json' -Body $body
+```
+
+Example response:
+
+```json
+{
+  "status": "ok",
+  "result": "pass",
+  "feature": "user.feature",
+  "scenario": "User Details_01: Run User API",
+  "environment": "STG",
+  "message": "1 scenario(s) passed out of 1.",
+  "exit_code": 0,
+  "passed": 1,
+  "failed": 0,
+  "total": 1
+}
+```
+
+The extension UI files are in [extension_prototype/](extension_prototype), and they call this backend when a scenario is run.
+
+## ▶️ Start the extension backend
+
+From the project root:
+
+```bash
+python extension_bridge.py
+```
+
+You can then verify it is alive with:
+
+```bash
+Invoke-RestMethod -Uri 'http://127.0.0.1:8000/health'
+```
+
 ## 📝 Notes
 
 - Some scenarios depend on live external APIs, so test results may vary if the upstream service changes.
